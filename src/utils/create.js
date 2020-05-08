@@ -1,40 +1,51 @@
-import Vue from 'vue'
+import Vue from 'vue';
 
 // 可以动态创建组件实例并挂载至body
 export function create(Component, props) {
-  // 1.组件实例怎么创建？
-  // 方式1：组件配置对象 =》 Ctor = Vue.extend(Component)变成构造函数
-  // =》 new Ctor()
-  // 方式2：借鸡生蛋new Vue({render() {}}),在render中把Component作为根组件
-  const vm = new Vue({
-    // h是createElement函数，它可以返回虚拟dom
-    render(h) {
-      console.log(h(Component,{props}));
-      
-      // 将Component作为根组件渲染出来
-      // h(标签名称或组件配置对象，传递属性、事件等，孩子元素)
-      return h(Component, {props})
-    }
-  }).$mount() // 挂载是为了把虚拟dom变成真实dom
-  // 不挂载就没有真实dom
-  // 手动追加至body
-  // 挂载之后$el可以访问到真实dom
-  document.body.appendChild(vm.$el)
+    // 1.组件实例怎么创建？
+    // 方式1：组件配置对象 =》 Ctor = Vue.extend(Component)变成构造函数
+    // =》 new Ctor()
+    const Ctor = Vue.extend(Component);
+    let comp = new Ctor({
+        propsData: props
+    });
+    console.log(comp);
+    
+    // 问题1：$props, $option.props 和 _props有什么区别，问什么只有赋值给_props才正确
+    comp._props = props;
 
-  console.log(vm.$children);
-  
-  // 实例
-  const comp = vm.$children[0]
+    /* 问题2: 下面如果写成：
 
-  // 淘汰机制
-  comp.remove = () => {
-    // 删除dom
-    document.body.removeChild(vm.$el)
+        let element = comp.$mount().$el;
+        console.log(element);
+        document.body.appendChild(element);
+    
+        log 出来是一个占位符<!-- -->
+        执行下面的appendChild也不报错
+        页面元素也能正常显示，为什么？
+    */
+    let element = comp.$mount();
+    document.body.appendChild(element.$el);
 
-    // 销毁组件
-    vm.$destroy()
-  }
+    // 淘汰机制
+    comp.remove = () => {
+        /*问题3: 如果按照上面问题2的操作后，在这里直接remove那个空的占位符element：
+            
+            document.body.removeChild(element);
 
-  // 返回Component组件实例
-  return comp
+            这时候就会报错，那么为什么
+            document.body.appendChild(element)都可以;
+            document.body.removeChild(element)就不行了？
+        */
+        console.log(element.$el);
+        // 删除dom
+        document.body.removeChild(element.$el);
+
+        // 销毁组件
+        comp.$destroy();
+    };
+
+    // 返回Component组件实例
+    return comp;
+
 }

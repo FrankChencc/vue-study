@@ -2,11 +2,17 @@
   <div class="hello">
     <h1>{{ msg }}</h1>
     <!-- 组件通信 -->
-    <!-- <Communication></Communication> -->
+    <!-- <Communication @foo="onFoo"></Communication> -->
     <!-- 表单 -->
-    <FormExample></FormExample>
+    <!-- <FormExample></FormExample> -->
     <!-- 插槽 -->
     <!-- <SlotExample></SlotExample> -->
+    <!-- 递归 -->
+    <!-- <Recursion></Recursion> -->
+    <!-- kvuex -->
+    <p @click="$store.commit('add')">counter: {{$store.state.counter}}</p>
+    <p @click="$store.dispatch('add')">async counter: {{$store.state.counter}}</p>
+    <p>getters counter: {{$store.getters.doubleCount}}</p>
   </div>
 </template>
 
@@ -14,6 +20,7 @@
 import Communication from '@/components/communication';
 import FormExample from '@/components/form';
 import SlotExample from '@/components/slots';
+import Recursion from '@/components/recursion'
 
 export default {
   name: 'HelloWorld',
@@ -23,7 +30,14 @@ export default {
   components: {
     Communication,
     FormExample,
-    SlotExample
+    SlotExample,
+    Recursion
+  },
+  methods: {
+    onFoo() {
+      console.log('onFoo in HelloWorld');
+      
+    }
   },
 }
 </script>
